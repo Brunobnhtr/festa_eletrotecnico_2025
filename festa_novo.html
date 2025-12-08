@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confraternização SENAI — Eletrotécnica 2025</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #8b5cf6 100%);
+      color: #fff;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Hero Section com Zoom Effect */
+    .hero-section {
+      position: relative;
+      height: 100vh;
+      width: 100%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 20px;
+      opacity: 0;
+      transform: translateY(30px);
+      animation: fadeInUp 1s ease 0.5s forwards;
+    }
+
+    .hero-content h1 {
+      font-size: clamp(2.5em, 8vw, 5em);
+      margin-bottom: 20px;
+      text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      font-weight: 900;
+      background: linear-gradient(135deg, #fff 0%, #e0e7ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-content p {
+      font-size: clamp(1.2em, 3vw, 2em);
+      opacity: 0.95;
+      text-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .hero-image-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    .hero-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scale(1.5);
+      transition: transform 0.1s ease-out;
+      will-change: transform;
+    }
+
+    .hero-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(30, 58, 138, 0.7), rgba(139, 92, 246, 0.6));
+      z-index: 5;
+      opacity: 0.8;
+    }
+
+    .scroll-indicator {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 15;
+      opacity: 0;
+      animation: fadeInUp 1s ease 1.5s forwards, bounce 2s ease infinite 2.5s;
+    }
+
+    .scroll-indicator span {
+      display: block;
+      width: 30px;
+      height: 50px;
+      border: 3px solid rgba(255, 255, 255, 0.8);
+      border-radius: 25px;
+      position: relative;
+    }
+
+    .scroll-indicator span::before {
+      content: '';
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      width: 6px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      transform: translateX(-50%);
+      animation: scrollDot 2s ease infinite;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-10px); }
+    }
+
+    @keyframes scrollDot {
+      0% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    }
+
+    header {
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(20px);
+      padding: 20px;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      opacity: 0;
+      transform: translateY(-100%);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    header.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .header-title {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .header-title h1 {
+      font-size: clamp(1.3em, 4vw, 2.2em);
+      margin-bottom: 5px;
+      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    .header-title p {
+      font-size: clamp(0.8em, 2vw, 1em);
+      opacity: 0.95;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-stat {
+      background: rgba(255, 255, 255, 0.08);
+      padding: 10px 14px;
+      border-radius: 12px;
+      color: #facc15;
+      font-weight: 700;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.08);
+      min-width: 160px;
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+    }
+
+    .header-stat .stat-label {
+      font-size: 0.85rem;
+      color: rgba(250, 204, 21, 0.95);
+      opacity: 0.95;
+      font-weight: 700;
+    }
+
+    .header-stat .stat-value {
+      font-size: 1.35rem;
+      color: #facc15;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .admin-btn-header {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(251, 191, 36, 0.9);
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+      font-size: clamp(0.9em, 2vw, 1em);
+    }
+
+    .admin-btn-header:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(251, 191, 36, 0.6);
+      background: rgba(251, 191, 36, 1);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+      position: relative;
+      z-index: 50;
+    }
+
+    .section {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 25px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      opacity: 0;
+      transform: translateY(50px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    h2 {
+      font-size: clamp(1.5em, 4vw, 2.5em);
+      margin-bottom: 10px;
+      text-align: center;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      background: linear-gradient(135deg, #fff 0%, #e0e7ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .section-subtitle {
+      text-align: center;
+      opacity: 0.9;
+      margin-bottom: 30px;
+      font-size: clamp(0.9em, 2vw, 1.1em);
+      line-height: 1.5;
+    }
+
+    /* LISTA DE PARTICIPANTES */
+    .participants-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 12px;
+      margin-top: 25px;
+    }
+
+    .participant-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.3s ease;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .participant-card:hover {
+      transform: translateX(5px);
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .participant-card.paid {
+      border-color: #4ade80;
+      background: rgba(74, 222, 128, 0.15);
+    }
+
+    .participant-status {
+      font-size: 1.5em;
+      min-width: 30px;
+      text-align: center;
+    }
+
+    .participant-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .participant-name {
+      font-weight: bold;
+      font-size: 1em;
+      margin-bottom: 4px;
+      word-break: break-word;
+    }
+
+    .participant-phone {
+      opacity: 0.8;
+      font-size: 0.85em;
+      font-family: 'Courier New', monospace;
+    }
+
+    .participant-card.paid .participant-name {
+      color: #4ade80;
+    }
+
+    /* FORMULÁRIO */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      font-size: clamp(0.95em, 2vw, 1.1em);
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.95);
+      color: #1e293b;
+      font-size: clamp(0.9em, 2vw, 1em);
+      transition: all 0.3s ease;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 1);
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+    }
+
+    .pix-box {
+      background: linear-gradient(135deg, rgba(74, 222, 128, 0.2), rgba(34, 197, 94, 0.2));
+      padding: 20px;
+      border-radius: 15px;
+      margin: 25px 0;
+      text-align: center;
+      border: 2px solid #4ade80;
+      box-shadow: 0 8px 25px rgba(74, 222, 128, 0.3);
+    }
+
+    .pix-key {
+      font-size: clamp(1em, 3vw, 1.5em);
+      font-weight: bold;
+      color: #4ade80;
+      margin: 12px 0;
+      word-break: break-all;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      border: 2px dashed #4ade80;
+    }
+
+    .btn-copy-pix {
+      width: auto;
+      padding: 12px 25px;
+      margin: 0;
+      background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: clamp(0.9em, 2vw, 1.1em);
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 20px rgba(74, 222, 128, 0.4);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-copy-pix:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(74, 222, 128, 0.6);
+    }
+
+    .btn-copy-pix:active {
+      transform: translateY(0);
+    }
+
+    .btn-copy-pix.copied {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .pix-box .pix-actions { 
+      display: flex; 
+      gap: 8px; 
+      justify-content: center; 
+      margin-top: 8px; 
+    }
+    
+    .pix-box .pix-actions button { 
+      flex: 1 1 0; 
+      min-width: 120px; 
+      padding: 12px 18px; 
+      border-radius: 10px; 
+      font-size: clamp(0.95em, 2vw, 1.05em); 
+      cursor: pointer; 
+      border: none; 
+    }
+    
+    .pix-box .pix-actions .btn-copy-pix { 
+      margin: 0; 
+      justify-content: center; 
+    }
+    
+    .pix-box .pix-actions .pix-close-btn { 
+      background: rgba(255,255,255,0.06); 
+      color: #fff; 
+      box-shadow: none; 
+    }
+
+    .payment-option {
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .payment-option:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .payment-option.selected {
+      border-color: #4ade80;
+      background: rgba(74, 222, 128, 0.2);
+    }
+
+    .payment-option input[type="radio"] {
+      width: auto;
+      margin: 0;
+    }
+
+    .payment-option-content {
+      flex: 1;
+    }
+
+    .payment-option-title {
+      font-weight: bold;
+      font-size: 1.1em;
+      margin-bottom: 4px;
+    }
+
+    .payment-option-desc {
+      font-size: 0.9em;
+      opacity: 0.8;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+      color: #fff;
+      font-size: clamp(1em, 2.5vw, 1.2em);
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 20px rgba(74, 222, 128, 0.5);
+    }
+
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(74, 222, 128, 0.7);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .status {
+      margin-top: 25px;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      font-weight: bold;
+      font-size: clamp(0.95em, 2vw, 1.1em);
+      animation: slideIn 0.5s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(-100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .status.pendente {
+      background: rgba(251, 191, 36, 0.25);
+      border: 2px solid #fbbf24;
+    }
+
+    .status.aprovado {
+      background: rgba(74, 222, 128, 0.25);
+      border: 2px solid #4ade80;
+    }
+
+    .emoji {
+      font-size: 1.8em;
+      margin-right: 8px;
+    }
+
+    /* PAINEL ADMIN */
+    .admin-panel {
+      display: none;
+    }
+
+    .admin-panel.active {
+      display: block;
+    }
+
+    .payment-card {
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 15px;
+      border-left: 5px solid #fbbf24;
+      transition: all 0.3s ease;
+    }
+
+    .payment-card.aprovado {
+      border-left-color: #4ade80;
+      opacity: 0.7;
+    }
+
+    .payment-card:hover {
+      transform: translateX(8px);
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    .payment-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .payment-details {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .payment-details h3 {
+      margin-bottom: 8px;
+      font-size: clamp(1.1em, 3vw, 1.4em);
+    }
+
+    .payment-details p {
+      opacity: 0.9;
+      margin: 6px 0;
+      font-size: clamp(0.85em, 2vw, 1em);
+    }
+
+    .payment-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-small {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: auto;
+      font-size: clamp(0.85em, 2vw, 1em);
+    }
+
+    .btn-approve {
+      background: #4ade80;
+      color: #fff;
+    }
+
+    .btn-approve:hover {
+      background: #22c55e;
+      transform: translateY(-2px);
+    }
+
+    .btn-reject {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    .btn-reject:hover {
+      background: #dc2626;
+      transform: translateY(-2px);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: rgba(255, 255, 255, 0.12);
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .stat-number {
+      font-size: clamp(2em, 5vw, 3.5em);
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .stat-label {
+      opacity: 0.95;
+      font-size: clamp(0.85em, 2vw, 1.15em);
+    }
+
+    /* RESPONSIVIDADE MOBILE */
+    @media (max-width: 768px) {
+      .container {
+        padding: 15px;
+      }
+
+      .section {
+        padding: 20px 15px;
+        margin-bottom: 20px;
+      }
+
+      .participants-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .payment-info {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .payment-actions {
+        width: 100%;
+        flex-direction: column;
+      }
+
+      .btn-small {
+        width: 100%;
+      }
+
+      .pix-box {
+        padding: 15px;
+      }
+
+      .pix-key {
+        font-size: 1em;
+        padding: 12px;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+
+      header {
+        padding: 15px;
+      }
+
+      .header-content {
+        gap: 10px;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .header-right {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+        gap: 10px;
+      }
+
+      .header-stat {
+        min-width: auto;
+        text-align: right;
+        align-items: flex-end;
+        padding: 8px 10px;
+      }
+
+      .header-stat .stat-value {
+        font-size: 1.15rem;
+      }
+
+      .admin-btn-header {
+        padding: 8px 12px;
+        font-size: 0.95rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .upload-area {
+        padding: 20px 15px;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Hero Section com Zoom Effect -->
+  <div class="hero-section">
+    <div class="hero-image-container">
+      <img src="Turma.jpeg" alt="Turma Eletrotécnica" class="hero-image" id="heroImage">
+    </div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <h1>🎉 Confraternização 2025</h1>
+      <p>Técnico em Eletrotécnica — SENAI</p>
+    </div>
+    <div class="scroll-indicator">
+      <span></span>
+    </div>
+  </div>
+
+  <header id="mainHeader">
+    <div class="header-content">
+      <div class="header-title">
+        <h1>🎉 Confraternização 2025</h1>
+        <p>Técnico em Eletrotécnica — SENAI | Prof. Edgar • 16/Dez</p>
+      </div>
+      <div class="header-right">
+        <div id="arrecadacao" class="header-stat">
+          <div class="stat-label">Arrecadado</div>
+          <div class="stat-value">R$ 0,00</div>
+        </div>
+        <button class="admin-btn-header" onclick="mostrarLoginAdmin()">🔐 Painel Admin</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- ÁREA PÚBLICA -->
+    <div id="publicArea">
+      <!-- LISTA DE PARTICIPANTES -->
+      <div class="section">
+        <h2>👥 Lista de Participantes</h2>
+        <p class="section-subtitle">Acompanhe quem já confirmou presença</p>
+        <div class="participants-grid" id="participantsList"></div>
+      </div>
+
+      <!-- PAGAMENTO -->
+      <div class="section">
+        <h2>💳 Confirmar Presença</h2>
+        <p class="section-subtitle">
+          Valor da contribuição: <strong style="font-size: 1.5em; color: #4ade80;">R$ 20,00</strong>
+        </p>
+
+        <div class="form-group">
+          <label>📱 Seu número de telefone</label>
+          <select id="tel" onchange="verificarStatus()">
+            <option value="">Selecione seu telefone</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>👤 Seu nome completo</label>
+          <input id="nome" placeholder="Digite seu nome completo" />
+        </div>
+
+        <div class="form-group">
+          <label>💰 Forma de pagamento</label>
+          
+          <div class="payment-option" onclick="selectPaymentOption('pix')">
+            <input type="radio" name="paymentType" id="paymentPix" value="pix">
+            <div class="payment-option-content">
+              <div class="payment-option-title">💳 PIX (sem comprovante)</div>
+              <div class="payment-option-desc">Pague via PIX. Todas as confirmações exigem aprovação do administrador.</div>
+            </div>
+          </div>
+
+          <div class="payment-option" onclick="selectPaymentOption('dinheiro')">
+            <input type="radio" name="paymentType" id="paymentDinheiro" value="dinheiro">
+            <div class="payment-option-content">
+              <div class="payment-option-title">💵 Dinheiro</div>
+              <div class="payment-option-desc">Pagamento em dinheiro — só será aprovado quando o administrador confirmar o recebimento.</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="pixSection" style="display: none;">
+          <div class="pix-box">
+            <div style="font-size: 1.2em; margin-bottom: 8px;">📌 Chave PIX</div>
+            <div class="pix-key" id="pixKey">SEU_PIX_AQUI</div>
+            <div class="pix-actions">
+              <button class="btn-copy-pix" onclick="copiarChavePix()">
+                <span id="copyIcon">📋</span>
+                <span id="copyText">Copiar Chave</span>
+              </button>
+              <button class="pix-close-btn" onclick="closePixSection()">Fechar</button>
+            </div>
+            <small style="opacity: 0.9; display: block; margin-top: 12px;">Faça o pagamento de R$ 20,00</small>
+          </div>
+        </div>
+
+        <button onclick="enviarPagamento()">✅ Confirmar</button>
+
+        <div id="statusArea"></div>
+      </div>
+    </div>
+
+    <!-- PAINEL ADMIN -->
+    <div id="adminArea" class="admin-panel">
+      <div class="section">
+        <h2>🔐 Painel Administrativo</h2>
+        
+        <div class="stats" id="stats"></div>
+
+        <div style="text-align: center; margin-bottom: 30px;">
+          <button class="admin-btn-header" onclick="voltarParaPublico()">← Voltar</button>
+        </div>
+
+        <h3 style="margin-bottom: 20px; font-size: clamp(1.3em, 3vw, 1.8em);">💰 Confirmações Pendentes</h3>
+        <div id="paymentsList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de correção de número -->
+  <div id="corrigirModal" style="display:none; position:fixed; inset:0; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); z-index:2000;">
+    <div style="background:#fff; color:#111; padding:20px; border-radius:12px; width:320px; max-width:90%;">
+      <h3 style="margin-bottom:10px;">Corrigir Número</h3>
+      <p style="opacity:0.9; margin-bottom:10px;">Selecione o número correto para vincular o pagamento:</p>
+      <select id="corrigirSelect" style="width:100%; padding:10px; margin-bottom:12px; border-radius:8px;"></select>
+      <div style="display:flex; gap:8px; justify-content:flex-end;">
+        <button onclick="closeCorrigirModal()" style="padding:10px 14px; border-radius:8px; background:#ef4444; color:#fff; border:none;">Cancelar</button>
+        <button onclick="handleCorrigirConfirm()" style="padding:10px 14px; border-radius:8px; background:#4ade80; color:#fff; border:none;">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // CONFIGURAÇÕES
+    const ADMIN_PASSWORD = 'senai2024';
+    const PIX_KEY = '24992128418';
+
+    document.getElementById('pixKey').textContent = PIX_KEY;
+
+    // Storage wrapper
+    const storage = (function() {
+      if (window.storage && window.storage.get && window.storage.set) return window.storage;
+      return {
+        async set(key, value) { try { localStorage.setItem(key, value); } catch(e) {} },
+        async get(key) { try { const v = localStorage.getItem(key); return v !== null ? { value: v } : null; } catch(e) { return null; } },
+        async list(prefix) { try { const keys = []; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (!prefix || k.startsWith(prefix)) keys.push(k); } return { keys }; } catch(e) { return { keys: [] }; } },
+        async delete(key) { try { localStorage.removeItem(key); } catch(e) {} }
+      };
+    })();
+
+    // Função para formatar telefone brasileiro
+    function formatarTelefone(tel) {
+      const num = tel.replace('+55', '');
+      if (num.length === 11) {
+        return `(${num.substring(0, 2)}) ${num.substring(2, 7)}-${num.substring(7)}`;
+      }
+      return tel;
+    }
+
+    // Lista de telefones
+    const TELEFONES = [
+      '+5524992952177', '+5524981089129', '+5524992902369', '+5524999213768',
+      '+5524988019478', '+5524999399186', '+5524992224843', '+5524993111441',
+      '+5524992919572', '+5524988058184', '+5524988189953', '+5524992374226',
+      '+5511963079276', '+5524993956594', '+5522999552885', '+5524992535744',
+      '+5524992182694', '+5524988621688', '+5524981527678', '+5524992926997',
+      '+553299628636', '+5524999645701', '+5524992273043', '+5524999281630',
+      '+5524993304456', '+5524992783475', '+5524988188617', '+5524992789205',
+      '+5524981383808', '+5524992357133', '+5524992527505', '+5524993301252',
+      '+5524988373635', '+5524988368482', '+5524993117555', '+5524988526788',
+      '+5524992663234', '+5524992295851', '+5524981184401', '+5524998180844',
+      '+5524988629597'
+    ];
+
+    // Select de telefones
+    const telSelect = document.getElementById('tel');
+
+    async function atualizarTelSelect() {
+      telSelect.innerHTML = '';
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = 'Selecione seu telefone';
+      telSelect.appendChild(placeholder);
+
+      const pagamentosMap = {};
+      try {
+        const res = await storage.list('pagamento_');
+        if (res && res.keys) {
+          for (const k of res.keys) {
+            try {
+              const d = await storage.get(k);
+              if (d) {
+                const p = JSON.parse(d.value);
+                pagamentosMap[p.telefone] = p;
+              }
+            } catch (e) {}
+          }
+        }
+      } catch (e) {}
+
+      TELEFONES.forEach(tel => {
+        const option = document.createElement('option');
+        option.value = tel;
+        const p = pagamentosMap[tel];
+        if (p) {
+          option.disabled = true;
+          option.textContent = `${formatarTelefone(tel)} — ocupado (${p.nome})`;
+        } else {
+          option.textContent = formatarTelefone(tel);
+        }
+        telSelect.appendChild(option);
+      });
+    }
+
+    // Selecionar tipo de pagamento
+    function selectPaymentOption(type) {
+      const pixRadio = document.getElementById('paymentPix');
+      const dinRadio = document.getElementById('paymentDinheiro');
+      const pixSection = document.getElementById('pixSection');
+
+      if (pixRadio) pixRadio.checked = (type === 'pix');
+      if (dinRadio) dinRadio.checked = (type === 'dinheiro');
+
+      document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
+
+      if (type === 'pix') {
+        if (pixSection) pixSection.style.display = 'block';
+        const el = document.querySelectorAll('.payment-option')[0];
+        if (el) el.classList.add('selected');
+      } else if (type === 'dinheiro') {
+        if (pixSection) pixSection.style.display = 'none';
+        const el = document.querySelectorAll('.payment-option')[1];
+        if (el) el.classList.add('selected');
+      }
+    }
+
+    // Copiar chave PIX
+    function copiarChavePix() {
+      const pixKey = PIX_KEY;
+      const btn = document.querySelector('.btn-copy-pix');
+      const icon = document.getElementById('copyIcon');
+      const text = document.getElementById('copyText');
+      
+      navigator.clipboard.writeText(pixKey).then(() => {
+        btn.classList.add('copied');
+        icon.textContent = '✅';
+        text.textContent = 'Copiada!';
+        
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          icon.textContent = '📋';
+          text.textContent = 'Copiar Chave';
+        }, 2000);
+      }).catch(err => {
+        alert('❌ Erro ao copiar: ' + pixKey);
+      });
+    }
+
+    function closePixSection() {
+      const pixSection = document.getElementById('pixSection');
+      if (pixSection) pixSection.style.display = 'none';
+    }
+
+    // Carregar participantes
+    async function carregarParticipantes() {
+      const participantsList = document.getElementById('participantsList');
+      const nomesMap = {};
+      const statusMap = {};
+
+      try {
+        const result = await storage.list('pagamento_');
+        if (result && result.keys) {
+          for (const key of result.keys) {
+            try {
+              const data = await storage.get(key);
+              if (data) {
+                const pgto = JSON.parse(data.value);
+                nomesMap[pgto.telefone] = pgto.nome;
+                statusMap[pgto.telefone] = pgto.status || 'pendente';
+              }
+            } catch (e) {}
+          }
+        }
+      } catch (error) {}
+
+      participantsList.innerHTML = TELEFONES.map(tel => {
+        const nome = nomesMap[tel];
+        const st = statusMap[tel];
+        const isApproved = st === 'aprovado';
+        const statusEmoji = isApproved ? '✅' : (nome ? '⏳' : '—');
+        return `
+          <div class="participant-card ${isApproved ? 'paid' : ''}">
+            <div class="participant-status">${statusEmoji}</div>
+            <div class="participant-info">
+              <div class="participant-name">${nome || 'Aguardando'}</div>
+              <div class="participant-phone">${formatarTelefone(tel)}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      try { atualizarTelSelect(); } catch (e) {}
+      try { atualizarArrecadacao(); } catch (e) {}
+    }
+
+    async function enviarPagamento() {
+      const tel = document.getElementById('tel').value;
+      const nome = document.getElementById('nome').value;
+      const tipo = (document.querySelector('input[name="paymentType"]:checked') || {}).value || 'pix';
+
+      if (!tel || !nome) {
+        alert('⚠️ Preencha telefone e nome!');
+        return;
+      }
+
+      try {
+        const existente = await storage.get('pagamento_' + tel);
+        if (existente && existente.value) {
+          const ex = JSON.parse(existente.value);
+          const exName = ex.nome || '(sem nome)';
+          const exStatus = ex.status || 'pendente';
+          const msg = `Já existe um registro para este número:\nNome: ${exName}\nStatus: ${exStatus}\n\nDeseja sobrescrever este registro?`;
+          if (!confirm(msg)) {
+            return;
+          }
+        }
+      } catch (e) {}
+
+      const pagamento = {
+        telefone: tel,
+        nome: nome,
+        tipo: tipo,
+        comprovante: 'Sem comprovante',
+        data: new Date().toLocaleString('pt-BR'),
+        status: 'pendente'
+      };
+
+      try {
+        await storage.set('pagamento_' + tel, JSON.stringify(pagamento));
+        mostrarStatus('pendente');
+        
+        if (tipo === 'pix') {
+          alert('✅ Confirmação enviada! Aguarde aprovação do administrador. A chave PIX foi exibida para facilitar o pagamento.');
+          const pixSection = document.getElementById('pixSection');
+          if (pixSection) pixSection.style.display = 'block';
+          document.getElementById('pixKey').textContent = PIX_KEY;
+        } else {
+          alert('✅ Confirmação enviada! Aguarde aprovação do administrador.');
+        }
+        carregarParticipantes();
+      } catch (error) {
+        alert('❌ Erro ao enviar. Tente novamente.');
+      }
+    }
+
+    async function verificarStatus() {
+      const tel = document.getElementById('tel').value;
+      if (!tel) return;
+
+      try {
+        const data = await storage.get('pagamento_' + tel);
+        if (data) {
+          const pgto = JSON.parse(data.value);
+          mostrarStatus(pgto.status);
+        } else {
+          document.getElementById('statusArea').innerHTML = '';
+        }
+      } catch (error) {
+        document.getElementById('statusArea').innerHTML = '';
+      }
+    }
+
+    function mostrarStatus(status) {
+      const statusArea = document.getElementById('statusArea');
+      if (status === 'pendente') {
+        statusArea.innerHTML = `
+          <div class="status pendente">
+            <span class="emoji">⏳</span>
+            Em análise! Aguarde confirmação.
+          </div>
+        `;
+      } else if (status === 'aprovado') {
+        statusArea.innerHTML = `
+          <div class="status aprovado">
+            <span class="emoji">✅</span>
+            Confirmado! Nos vemos lá!
+          </div>
+        `;
+      }
+    }
+
+    // ADMIN
+    function mostrarLoginAdmin() {
+      const senha = prompt('🔐 Senha de administrador:');
+      if (senha === ADMIN_PASSWORD) {
+        document.getElementById('publicArea').style.display = 'none';
+        document.getElementById('adminArea').classList.add('active');
+        carregarPainelAdmin();
+      } else if (senha) {
+        alert('❌ Senha incorreta!');
+      }
+    }
+
+    function voltarParaPublico() {
+      document.getElementById('publicArea').style.display = 'block';
+      document.getElementById('adminArea').classList.remove('active');
+    }
+
+    async function carregarPainelAdmin() {
+      const stats = document.getElementById('stats');
+      const paymentsList = document.getElementById('paymentsList');
+      
+      let total = 0;
+      let pendentes = 0;
+      let aprovados = 0;
+      const pagamentos = [];
+
+      try {
+        const result = await storage.list('pagamento_');
+        if (result && result.keys) {
+          for (const key of result.keys) {
+            try {
+              const data = await storage.get(key);
+              if (data) {
+                const pgto = JSON.parse(data.value);
+                pagamentos.push(pgto);
+                total++;
+                if (pgto.status === 'pendente') pendentes++;
+                if (pgto.status === 'aprovado') aprovados++;
+              }
+            } catch (e) {}
+          }
+        }
+      } catch (error) {}
+
+      stats.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-number">${total}</div>
+          <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-card" style="border-color: #fbbf24;">
+          <div class="stat-number" style="color: #fbbf24;">${pendentes}</div>
+          <div class="stat-label">Pendentes</div>
+        </div>
+        <div class="stat-card" style="border-color: #4ade80;">
+          <div class="stat-number" style="color: #4ade80;">${aprovados}</div>
+          <div class="stat-label">Aprovados</div>
+        </div>
+        <div class="stat-card" style="border-color: #4ade80;">
+          <div class="stat-number" style="color: #4ade80;">R$ ${(aprovados * 20).toFixed(2)}</div>
+          <div class="stat-label">Arrecadado</div>
+        </div>
+      `;
+
+      const pendentesList = pagamentos.filter(p => p.status === 'pendente');
+      const aprovadosList = pagamentos.filter(p => p.status === 'aprovado');
+
+      let html = '';
+      html += '<h3 style="margin-bottom:10px;">💰 Confirmações Pendentes</h3>';
+      html += (pendentesList.length ? pendentesList.map(p => `
+        <div class="payment-card">
+          <div class="payment-info">
+            <div class="payment-details">
+              <h3>${p.nome}</h3>
+              <p>📱 ${formatarTelefone(p.telefone)}</p>
+              <p>💳 ${p.tipo === 'dinheiro' ? 'Dinheiro (aguardando recebimento)' : 'PIX (sem comprovante)'}</p>
+              <p>🕐 ${p.data}</p>
+            </div>
+            <div class="payment-actions">
+              <button class="btn-small btn-approve" onclick="aprovarPagamento('${p.telefone}')">✅ Aprovar</button>
+              <button class="btn-small btn-reject" onclick="rejeitarPagamento('${p.telefone}')">❌ Rejeitar</button>
+              <button class="btn-small" onclick="showCorrigirModal('${p.telefone}')">✏️ Corrigir Número</button>
+            </div>
+          </div>
+        </div>
+      `).join('') : '<p style="text-align: center; opacity: 0.7; padding: 20px;">Nenhuma confirmação pendente</p>');
+
+      html += '<h3 style="margin-top:20px; margin-bottom:10px;">✅ Confirmações Aprovadas</h3>';
+      html += (aprovadosList.length ? aprovadosList.map(p => `
+        <div class="payment-card aprovado">
+          <div class="payment-info">
+            <div class="payment-details">
+              <h3>${p.nome}</h3>
+              <p>📱 ${formatarTelefone(p.telefone)}</p>
+              <p>💳 ${p.tipo === 'dinheiro' ? 'Dinheiro (recebido)' : 'PIX (sem comprovante)'}</p>
+              <p>🕐 ${p.data}</p>
+            </div>
+            <div class="payment-actions">
+              <button class="btn-small" onclick="reverterPagamento('${p.telefone}')">↩️ Reverter</button>
+            </div>
+          </div>
+        </div>
+      `).join('') : '<p style="text-align: center; opacity: 0.7; padding: 20px;">Nenhuma confirmação aprovada</p>');
+
+      paymentsList.innerHTML = html;
+      try { atualizarArrecadacao(); } catch (e) {}
+    }
+
+    async function aprovarPagamento(tel) {
+      try {
+        const data = await storage.get('pagamento_' + tel);
+        if (data) {
+          const pgto = JSON.parse(data.value);
+          pgto.status = 'aprovado';
+          await storage.set('pagamento_' + tel, JSON.stringify(pgto));
+          alert('✅ Aprovado!');
+          carregarPainelAdmin();
+          carregarParticipantes();
+          try { atualizarArrecadacao(); } catch (e) {}
+        }
+      } catch (error) {
+        alert('❌ Erro ao aprovar.');
+      }
+    }
+
+    async function rejeitarPagamento(tel) {
+      if (confirm('Rejeitar esta confirmação?')) {
+        try {
+          await storage.delete('pagamento_' + tel);
+          alert('❌ Rejeitado.');
+          carregarPainelAdmin();
+          carregarParticipantes();
+          try { atualizarArrecadacao(); } catch (e) {}
+        } catch (error) {
+          alert('❌ Erro ao rejeitar.');
+        }
+      }
+    }
+
+    async function reverterPagamento(tel) {
+      if (!confirm('Reverter esta confirmação aprovada para pendente?')) return;
+      try {
+        const data = await storage.get('pagamento_' + tel);
+        if (data) {
+          const pgto = JSON.parse(data.value);
+          pgto.status = 'pendente';
+          await storage.set('pagamento_' + tel, JSON.stringify(pgto));
+          alert('↩️ Pagamento revertido para pendente.');
+          carregarPainelAdmin();
+          carregarParticipantes();
+          try { atualizarArrecadacao(); } catch (e) {}
+        }
+      } catch (error) {
+        alert('❌ Erro ao reverter.');
+      }
+    }
+
+    async function corrigirPagamento(oldTel) {
+      if (arguments.length === 2) {
+        const newTel = arguments[1];
+        if (!newTel) return;
+        if (newTel === oldTel) { alert('O número informado é o mesmo. Nada a alterar.'); return; }
+        try {
+          const oldData = await storage.get('pagamento_' + oldTel);
+          if (!oldData) { alert('Pagamento original não encontrado.'); return; }
+
+          const existingNew = await storage.get('pagamento_' + newTel);
+          if (existingNew && existingNew.value) {
+            if (!confirm('Já existe um pagamento para o número novo. Deseja sobrescrever?')) return;
+          }
+
+          const pgto = JSON.parse(oldData.value);
+          pgto.telefone = newTel;
+
+          await storage.set('pagamento_' + newTel, JSON.stringify(pgto));
+          await storage.delete('pagamento_' + oldTel);
+
+          alert('Número corrigido com sucesso.');
+          carregarPainelAdmin();
+          carregarParticipantes();
+          try { atualizarArrecadacao(); } catch (e) {}
+        } catch (err) { alert('Erro ao corrigir número.'); }
+        return;
+      }
+    }
+
+    function showCorrigirModal(oldTel) {
+      const modal = document.getElementById('corrigirModal');
+      const select = document.getElementById('corrigirSelect');
+      select.innerHTML = '';
+      TELEFONES.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t;
+        opt.textContent = `${formatarTelefone(t)} (${t})`;
+        select.appendChild(opt);
+      });
+      select.value = oldTel;
+      modal.dataset.oldTel = oldTel;
+      modal.style.display = 'flex';
+    }
+
+    function closeCorrigirModal() {
+      const modal = document.getElementById('corrigirModal');
+      modal.style.display = 'none';
+      delete modal.dataset.oldTel;
+    }
+
+    async function handleCorrigirConfirm() {
+      const modal = document.getElementById('corrigirModal');
+      const oldTel = modal.dataset.oldTel;
+      const select = document.getElementById('corrigirSelect');
+      const newTel = select.value;
+      if (!oldTel || !newTel) return;
+      await corrigirPagamento(oldTel, newTel);
+      closeCorrigirModal();
+    }
+
+    async function atualizarArrecadacao() {
+      try {
+        let aprovados = 0;
+        const result = await storage.list('pagamento_');
+        if (result && result.keys) {
+          for (const key of result.keys) {
+            try {
+              const data = await storage.get(key);
+              if (data) {
+                const pgto = JSON.parse(data.value);
+                if (pgto.status === 'aprovado') aprovados++;
+              }
+            } catch (e) {}
+          }
+        }
+        const totalValue = aprovados * 20;
+        const formatted = totalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        const el = document.getElementById('arrecadacao');
+        if (el) {
+          const label = el.querySelector('.stat-label');
+          const value = el.querySelector('.stat-value');
+          if (value) value.textContent = formatted;
+          if (label) label.textContent = 'Arrecadado';
+        }
+      } catch (e) {}
+    }
+
+    // ===== EFEITOS VISUAIS =====
+
+    // Efeito de Zoom na Hero Image ao Scroll
+    window.addEventListener('scroll', () => {
+      const heroImage = document.getElementById('heroImage');
+      const scrolled = window.pageYOffset;
+      const heroHeight = window.innerHeight;
+      
+      if (scrolled < heroHeight) {
+        // Calcular escala: começa em 1.5 e diminui para 1.0
+        const scale = 1.5 - (scrolled / heroHeight) * 0.5;
+        heroImage.style.transform = `scale(${Math.max(1, scale)})`;
+      }
+
+      // Mostrar header quando passar da hero section
+      const header = document.getElementById('mainHeader');
+      if (scrolled > heroHeight - 100) {
+        header.classList.add('visible');
+      } else {
+        header.classList.remove('visible');
+      }
+    });
+
+    // Intersection Observer para animar sections ao aparecer
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -100px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, observerOptions);
+
+    // Observar todas as sections
+    document.addEventListener('DOMContentLoaded', () => {
+      const sections = document.querySelectorAll('.section');
+      sections.forEach(section => {
+        observer.observe(section);
+      });
+    });
+
+    // Inicializar
+    selectPaymentOption('pix');
+    carregarParticipantes();
+  </script>
+</body>
+</html>
