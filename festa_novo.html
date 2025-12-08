@@ -1455,10 +1455,6 @@
         document.querySelector('.participants-grid').scrollIntoView({ behavior: 'smooth' });
       }
     }
-      
-      try { atualizarTelSelect(); } catch (e) {}
-      try { atualizarArrecadacao(); } catch (e) {}
-    }
 
     async function enviarPagamento() {
       const tel = document.getElementById('tel').value;
