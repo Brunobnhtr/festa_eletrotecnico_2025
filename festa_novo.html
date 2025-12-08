@@ -1120,6 +1120,7 @@
     const telSelect = document.getElementById('tel');
 
     async function atualizarTelSelect() {
+      if (!telSelect) return; // Proteção contra elemento não encontrado
       telSelect.innerHTML = '';
       const placeholder = document.createElement('option');
       placeholder.value = '';
@@ -1413,7 +1414,7 @@
         return;
       }
 
-      let html = '<button onclick="irParaPagina(paginaAtual - 1)" ' + (paginaAtual === 1 ? 'disabled' : '') + '>⬅️ Anterior</button>';
+      let html = '<button onclick="irParaPagina(' + (paginaAtual - 1) + ')" ' + (paginaAtual === 1 ? 'disabled' : '') + '>⬅️ Anterior</button>';
       
       // Mostrar números de página
       const maxBotoes = 5;
@@ -1430,15 +1431,15 @@
       }
 
       for (let i = inicio; i <= fim; i++) {
-        html += `<button class="${i === paginaAtual ? 'active' : ''}" onclick="irParaPagina(${i})">${i}</button>`;
+        html += '<button class="' + (i === paginaAtual ? 'active' : '') + '" onclick="irParaPagina(' + i + ')">' + i + '</button>';
       }
 
       if (fim < totalPaginas) {
         if (fim < totalPaginas - 1) html += '<span>...</span>';
-        html += `<button onclick="irParaPagina(${totalPaginas})">${totalPaginas}</button>`;
+        html += '<button onclick="irParaPagina(' + totalPaginas + ')">' + totalPaginas + '</button>';
       }
 
-      html += '<button onclick="irParaPagina(paginaAtual + 1)" ' + (paginaAtual === totalPaginas ? 'disabled' : '') + '>Próxima ➡️</button>';
+      html += '<button onclick="irParaPagina(' + (paginaAtual + 1) + ')" ' + (paginaAtual === totalPaginas ? 'disabled' : '') + '>Próxima ➡️</button>';
       
       paginationDiv.innerHTML = html;
     }
