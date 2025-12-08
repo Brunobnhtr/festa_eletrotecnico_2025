@@ -384,6 +384,19 @@
       background: rgba(0, 0, 0, 0.3);
       border-radius: 10px;
       border: 2px dashed #4ade80;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      user-select: all;
+    }
+
+    .pix-key:hover {
+      background: rgba(74, 222, 128, 0.2);
+      box-shadow: 0 0 15px rgba(74, 222, 128, 0.5);
+      transform: scale(1.02);
+    }
+
+    .pix-key:active {
+      transform: scale(0.98);
     }
 
     .btn-copy-pix {
@@ -844,7 +857,7 @@
         <div id="pixSection" style="display: none;">
           <div class="pix-box">
             <div style="font-size: 1.2em; margin-bottom: 8px;">📌 Chave PIX</div>
-            <div class="pix-key" id="pixKey">SEU_PIX_AQUI</div>
+            <div class="pix-key" id="pixKey" onclick="copiarChavePix()" title="Clique para copiar">SEU_PIX_AQUI</div>
             <div class="pix-actions">
               <button class="btn-copy-pix" onclick="copiarChavePix()">
                 <span id="copyIcon">📋</span>
@@ -999,23 +1012,89 @@
     // Copiar chave PIX
     function copiarChavePix() {
       const pixKey = PIX_KEY;
-      const btn = document.querySelector('.btn-copy-pix');
-      const icon = document.getElementById('copyIcon');
-      const text = document.getElementById('copyText');
+      const pixSection = document.getElementById('pixSection');
       
-      navigator.clipboard.writeText(pixKey).then(() => {
+      if (!pixSection) {
+        console.error('Seção PIX não encontrada');
+        return;
+      }
+      
+      const btn = pixSection.querySelector('.btn-copy-pix');
+      const pixKeyElement = document.getElementById('pixKey');
+      const icon = pixSection.querySelector('#copyIcon');
+      const text = pixSection.querySelector('#copyText');
+      
+      if (!btn || !pixKeyElement || !icon || !text) {
+        console.error('Elementos não encontrados');
+        return;
+      }
+      
+      // Usar API Clipboard
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(pixKey).then(() => {
+          mostrarCopiadoFeedback(btn, icon, text, pixKeyElement);
+        }).catch(err => {
+          // Fallback para método antigo
+          copiarComFallback(pixKey, btn, icon, text, pixKeyElement);
+        });
+      } else {
+        // Fallback para navegadores antigos
+        copiarComFallback(pixKey, btn, icon, text, pixKeyElement);
+      }
+    }
+
+    function copiarComFallback(texto, btn, icon, text, pixKeyElement) {
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = texto;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        textarea.style.top = '0';
+        textarea.style.left = '0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        const success = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        
+        if (success) {
+          mostrarCopiadoFeedback(btn, icon, text, pixKeyElement);
+        } else {
+          throw new Error('Comando execCommand falhou');
+        }
+      } catch (err) {
+        alert('❌ Erro ao copiar. Chave: ' + texto);
+      }
+    }
+
+    function mostrarCopiadoFeedback(btn, icon, text, pixKeyElement) {
+      if (!btn || !icon || !text || !pixKeyElement) {
+        return;
+      }
+      
+      try {
+        // Feedback no botão
         btn.classList.add('copied');
         icon.textContent = '✅';
         text.textContent = 'Copiada!';
         
-        setTimeout(() => {
-          btn.classList.remove('copied');
-          icon.textContent = '📋';
-          text.textContent = 'Copiar Chave';
+        // Efeito visual no número PIX
+        pixKeyElement.style.background = 'rgba(74, 222, 128, 0.4)';
+        pixKeyElement.style.boxShadow = '0 0 20px rgba(74, 222, 128, 0.8)';
+        
+        // Limpar estado após 2 segundos
+        const timeoutId = setTimeout(() => {
+          if (btn) btn.classList.remove('copied');
+          if (icon) icon.textContent = '📋';
+          if (text) text.textContent = 'Copiar Chave';
+          if (pixKeyElement) {
+            pixKeyElement.style.background = 'rgba(0, 0, 0, 0.3)';
+            pixKeyElement.style.boxShadow = 'none';
+          }
         }, 2000);
-      }).catch(err => {
-        alert('❌ Erro ao copiar: ' + pixKey);
-      });
+      } catch (err) {
+        console.error('Erro ao mostrar feedback:', err);
+      }
     }
 
     function closePixSection() {
