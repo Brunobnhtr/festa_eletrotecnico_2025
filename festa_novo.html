@@ -283,6 +283,138 @@
       margin-top: 25px;
     }
 
+    /* Filtro de participantes */
+    .participants-filter {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .filter-search {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.95);
+      color: #1e293b;
+      font-size: 1em;
+      transition: all 0.3s ease;
+    }
+
+    .filter-search::placeholder {
+      color: #94a3b8;
+    }
+
+    .filter-search:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 1);
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+    }
+
+    /* Abas de filtro */
+    .filter-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .filter-tab {
+      padding: 10px 16px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      font-size: clamp(0.85em, 2vw, 1em);
+    }
+
+    .filter-tab:hover {
+      border-color: rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .filter-tab.active {
+      border-color: #3b82f6;
+      background: rgba(59, 130, 246, 0.3);
+      color: #fff;
+    }
+
+    /* Estatísticas */
+    .participants-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin: 15px 0;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .stat-item {
+      padding: 10px;
+    }
+
+    .stat-number {
+      font-size: 1.8em;
+      font-weight: 900;
+      color: #4ade80;
+    }
+
+    .stat-label {
+      font-size: 0.85em;
+      opacity: 0.8;
+      margin-top: 5px;
+    }
+
+    /* Paginação */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .pagination button, .pagination span {
+      padding: 8px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.9em;
+      transition: all 0.3s ease;
+    }
+
+    .pagination button:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .pagination button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .pagination .active {
+      background: rgba(59, 130, 246, 0.5);
+      border-color: #3b82f6;
+      font-weight: bold;
+    }
+
+    .pagination span {
+      cursor: default;
+      border: none;
+      background: transparent;
+    }
+
     .participant-card {
       background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(10px);
@@ -812,7 +944,44 @@
       <div class="section">
         <h2>👥 Lista de Participantes</h2>
         <p class="section-subtitle">Acompanhe quem já confirmou presença</p>
+        
+        <!-- Estatísticas -->
+        <div class="participants-stats">
+          <div class="stat-item">
+            <div class="stat-number" id="totalCount">0</div>
+            <div class="stat-label">Total</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number" style="color: #4ade80;" id="confirmCount">0</div>
+            <div class="stat-label">Confirmados</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number" style="color: #fbbf24;" id="pendingCount">0</div>
+            <div class="stat-label">Pendentes</div>
+          </div>
+        </div>
+        
+        <!-- Filtro -->
+        <div class="participants-filter">
+          <input 
+            type="text" 
+            class="filter-search" 
+            id="participantsSearch" 
+            placeholder="🔍 Buscar por nome ou telefone..."
+            onkeyup="filtrarParticipantes()"
+          >
+          
+          <div class="filter-tabs">
+            <button class="filter-tab active" onclick="filtrarPorStatus('todos')" data-filter="todos">Todos</button>
+            <button class="filter-tab" onclick="filtrarPorStatus('confirmado')" data-filter="confirmado">✅ Confirmados</button>
+            <button class="filter-tab" onclick="filtrarPorStatus('pendente')" data-filter="pendente">⏳ Pendentes</button>
+          </div>
+        </div>
+        
         <div class="participants-grid" id="participantsList"></div>
+        
+        <!-- Paginação -->
+        <div class="pagination" id="pagination"></div>
       </div>
 
       <!-- PAGAMENTO -->
@@ -1102,9 +1271,15 @@
       if (pixSection) pixSection.style.display = 'none';
     }
 
-    // Carregar participantes
+    // Estado global de filtros
+    let participantesData = [];
+    let paginaAtual = 1;
+    const itemsPorPagina = 8;
+    let filtroStatus = 'todos';
+    let buscaTexto = '';
+
+    // Carregar e processar participantes
     async function carregarParticipantes() {
-      const participantsList = document.getElementById('participantsList');
       const nomesMap = {};
       const statusMap = {};
 
@@ -1124,21 +1299,161 @@
         }
       } catch (error) {}
 
-      participantsList.innerHTML = TELEFONES.map(tel => {
+      // Construir array de participantes
+      participantesData = TELEFONES.map(tel => {
         const nome = nomesMap[tel];
         const st = statusMap[tel];
         const isApproved = st === 'aprovado';
-        const statusEmoji = isApproved ? '✅' : (nome ? '⏳' : '—');
-        return `
-          <div class="participant-card ${isApproved ? 'paid' : ''}">
-            <div class="participant-status">${statusEmoji}</div>
+        return {
+          telefone: tel,
+          nome: nome || 'Aguardando',
+          status: isApproved ? 'confirmado' : (nome ? 'pendente' : 'nao_preenchido'),
+          nomeFormatado: formatarTelefone(tel),
+          emoji: isApproved ? '✅' : (nome ? '⏳' : '—')
+        };
+      });
+
+      atualizarEstatisticas();
+      renderizarParticipantes();
+      
+      try { atualizarTelSelect(); } catch (e) {}
+      try { atualizarArrecadacao(); } catch (e) {}
+    }
+
+    // Atualizar estatísticas
+    function atualizarEstatisticas() {
+      const confirmados = participantesData.filter(p => p.status === 'confirmado').length;
+      const pendentes = participantesData.filter(p => p.status === 'pendente').length;
+      const total = TELEFONES.length;
+
+      document.getElementById('totalCount').textContent = total;
+      document.getElementById('confirmCount').textContent = confirmados;
+      document.getElementById('pendingCount').textContent = pendentes;
+    }
+
+    // Filtrar por status
+    function filtrarPorStatus(status) {
+      filtroStatus = status;
+      paginaAtual = 1;
+      buscaTexto = '';
+      document.getElementById('participantsSearch').value = '';
+      
+      // Atualizar abas ativas
+      document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      renderizarParticipantes();
+    }
+
+    // Filtrar por texto de busca
+    function filtrarParticipantes() {
+      buscaTexto = document.getElementById('participantsSearch').value.toLowerCase();
+      paginaAtual = 1;
+      renderizarParticipantes();
+    }
+
+    // Obter participantes filtrados
+    function obterParticipantesFiltrados() {
+      let filtrados = participantesData;
+
+      // Filtrar por status
+      if (filtroStatus === 'confirmado') {
+        filtrados = filtrados.filter(p => p.status === 'confirmado');
+      } else if (filtroStatus === 'pendente') {
+        filtrados = filtrados.filter(p => p.status === 'pendente' || p.status === 'nao_preenchido');
+      }
+
+      // Filtrar por texto de busca
+      if (buscaTexto) {
+        filtrados = filtrados.filter(p =>
+          p.nome.toLowerCase().includes(buscaTexto) ||
+          p.nomeFormatado.includes(buscaTexto) ||
+          p.telefone.includes(buscaTexto.replace(/\D/g, ''))
+        );
+      }
+
+      return filtrados;
+    }
+
+    // Renderizar participantes com paginação
+    function renderizarParticipantes() {
+      const filtrados = obterParticipantesFiltrados();
+      const totalPaginas = Math.ceil(filtrados.length / itemsPorPagina);
+      const inicio = (paginaAtual - 1) * itemsPorPagina;
+      const fim = inicio + itemsPorPagina;
+      const participantesVistos = filtrados.slice(inicio, fim);
+
+      const participantsList = document.getElementById('participantsList');
+      
+      if (participantesVistos.length === 0) {
+        participantsList.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 30px; opacity: 0.7;">Nenhum participante encontrado</div>';
+      } else {
+        participantsList.innerHTML = participantesVistos.map(p => `
+          <div class="participant-card ${p.status === 'confirmado' ? 'paid' : ''}">
+            <div class="participant-status">${p.emoji}</div>
             <div class="participant-info">
-              <div class="participant-name">${nome || 'Aguardando'}</div>
-              <div class="participant-phone">${formatarTelefone(tel)}</div>
+              <div class="participant-name">${p.nome}</div>
+              <div class="participant-phone">${p.nomeFormatado}</div>
             </div>
           </div>
-        `;
-      }).join('');
+        `).join('');
+      }
+
+      renderizarPaginacao(totalPaginas);
+    }
+
+    // Renderizar controles de paginação
+    function renderizarPaginacao(totalPaginas) {
+      const paginationDiv = document.getElementById('pagination');
+      
+      if (totalPaginas <= 1) {
+        paginationDiv.innerHTML = '';
+        return;
+      }
+
+      let html = '<button onclick="irParaPagina(paginaAtual - 1)" ' + (paginaAtual === 1 ? 'disabled' : '') + '>⬅️ Anterior</button>';
+      
+      // Mostrar números de página
+      const maxBotoes = 5;
+      let inicio = Math.max(1, paginaAtual - Math.floor(maxBotoes / 2));
+      let fim = Math.min(totalPaginas, inicio + maxBotoes - 1);
+      
+      if (fim - inicio < maxBotoes - 1) {
+        inicio = Math.max(1, fim - maxBotoes + 1);
+      }
+
+      if (inicio > 1) {
+        html += '<button onclick="irParaPagina(1)">1</button>';
+        if (inicio > 2) html += '<span>...</span>';
+      }
+
+      for (let i = inicio; i <= fim; i++) {
+        html += `<button class="${i === paginaAtual ? 'active' : ''}" onclick="irParaPagina(${i})">${i}</button>`;
+      }
+
+      if (fim < totalPaginas) {
+        if (fim < totalPaginas - 1) html += '<span>...</span>';
+        html += `<button onclick="irParaPagina(${totalPaginas})">${totalPaginas}</button>`;
+      }
+
+      html += '<button onclick="irParaPagina(paginaAtual + 1)" ' + (paginaAtual === totalPaginas ? 'disabled' : '') + '>Próxima ➡️</button>';
+      
+      paginationDiv.innerHTML = html;
+    }
+
+    // Ir para página
+    function irParaPagina(numero) {
+      const filtrados = obterParticipantesFiltrados();
+      const totalPaginas = Math.ceil(filtrados.length / itemsPorPagina);
+      
+      if (numero >= 1 && numero <= totalPaginas) {
+        paginaAtual = numero;
+        renderizarParticipantes();
+        document.querySelector('.participants-grid').scrollIntoView({ behavior: 'smooth' });
+      }
+    }
       
       try { atualizarTelSelect(); } catch (e) {}
       try { atualizarArrecadacao(); } catch (e) {}
