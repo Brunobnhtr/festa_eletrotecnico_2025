@@ -377,7 +377,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 6px;
+      gap: 15px;
       margin-top: 20px;
       flex-wrap: wrap;
       padding: 15px;
@@ -385,14 +385,14 @@
       border-radius: 10px;
     }
 
-    .pagination button, .pagination span {
-      padding: 10px 12px;
+    .pagination button {
+      padding: 10px 20px;
       border: 2px solid rgba(255, 255, 255, 0.2);
       border-radius: 8px;
       background: rgba(255, 255, 255, 0.08);
       color: #fff;
       cursor: pointer;
-      font-size: 0.9em;
+      font-size: 0.95em;
       font-weight: 600;
       transition: all 0.3s ease;
       white-space: nowrap;
@@ -410,19 +410,11 @@
       background: rgba(255, 255, 255, 0.05);
     }
 
-    .pagination button.active {
-      background: rgba(59, 130, 246, 0.6);
-      border-color: #3b82f6;
-      color: #fff;
-      box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
-    }
-
     .pagination span {
       cursor: default;
       border: none;
       background: transparent;
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 0.85em;
+      color: #fff;
     }
 
     .pagination span {
@@ -1433,26 +1425,13 @@
       let html = '';
       
       // Botão Anterior
-      html += '<button onclick="irParaPagina(' + (paginaAtual - 1) + ')" ' + (paginaAtual === 1 ? 'disabled' : '') + ' style="flex: 0 0 auto;">⬅️ Anterior</button>';
+      html += '<button onclick="irParaPagina(' + (paginaAtual - 1) + ')" ' + (paginaAtual === 1 ? 'disabled' : '') + '>⬅️ Anterior</button>';
       
-      // Números de página (máximo 5)
-      const maxBotoes = 5;
-      let inicio = Math.max(1, paginaAtual - Math.floor(maxBotoes / 2));
-      let fim = Math.min(totalPaginas, inicio + maxBotoes - 1);
-      
-      if (fim - inicio < maxBotoes - 1) {
-        inicio = Math.max(1, fim - maxBotoes + 1);
-      }
-
-      for (let i = inicio; i <= fim; i++) {
-        html += '<button class="' + (i === paginaAtual ? 'active' : '') + '" onclick="irParaPagina(' + i + ')" style="flex: 1 1 50px; min-width: 45px;">' + i + '</button>';
-      }
-      
-      // Indicador de página atual
-      html += '<span style="flex: 0 0 auto; padding: 0 8px; display: flex; align-items: center; color: #fff; font-size: 0.9em;">' + paginaAtual + ' / ' + totalPaginas + '</span>';
+      // Indicador de página
+      html += '<span style="padding: 0 15px; font-weight: bold; font-size: 1.1em;">' + paginaAtual + ' / ' + totalPaginas + '</span>';
       
       // Botão Próxima
-      html += '<button onclick="irParaPagina(' + (paginaAtual + 1) + ')" ' + (paginaAtual === totalPaginas ? 'disabled' : '') + ' style="flex: 0 0 auto;">Próxima ➡️</button>';
+      html += '<button onclick="irParaPagina(' + (paginaAtual + 1) + ')" ' + (paginaAtual === totalPaginas ? 'disabled' : '') + '>Próxima ➡️</button>';
       
       paginationDiv.innerHTML = html;
     }
