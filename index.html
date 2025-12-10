@@ -1126,56 +1126,98 @@
       appId: "1:123456789012:web:abcdef1234567890"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+    let firebaseReady = false;
+    let database = null;
 
-    // Storage wrapper com Firebase
+    try {
+      firebase.initializeApp(firebaseConfig);
+      database = firebase.database();
+      firebaseReady = true;
+    } catch(e) {
+      console.warn('Firebase não disponível, usando localStorage:', e);
+      firebaseReady = false;
+    }
+
+    // Storage wrapper com Firebase + fallback localStorage
     const storage = (function() {
       return {
         async set(key, value) {
           try {
-            const path = key.replace('pagamento_', '');
-            await database.ref('pagamentos/' + path).set(JSON.parse(value));
+            if (firebaseReady && database) {
+              const path = key.replace('pagamento_', '');
+              await database.ref('pagamentos/' + path).set(JSON.parse(value));
+              return;
+            }
           } catch(e) {
-            console.error('Erro ao salvar:', e);
+            console.warn('Erro Firebase, usando localStorage:', e);
           }
+          // Fallback para localStorage
+          try { 
+            localStorage.setItem(key, value); 
+          } catch(e) {}
         },
         async get(key) {
           try {
-            const path = key.replace('pagamento_', '');
-            const snapshot = await database.ref('pagamentos/' + path).get();
-            if (snapshot.exists()) {
-              return { value: JSON.stringify(snapshot.val()) };
+            if (firebaseReady && database) {
+              const path = key.replace('pagamento_', '');
+              const snapshot = await database.ref('pagamentos/' + path).get();
+              if (snapshot.exists()) {
+                return { value: JSON.stringify(snapshot.val()) };
+              }
             }
-            return null;
           } catch(e) {
-            console.error('Erro ao buscar:', e);
-            return null;
+            console.warn('Erro Firebase get:', e);
+          }
+          // Fallback para localStorage
+          try { 
+            const v = localStorage.getItem(key); 
+            return v !== null ? { value: v } : null; 
+          } catch(e) { 
+            return null; 
           }
         },
         async list(prefix) {
           try {
-            const snapshot = await database.ref('pagamentos').get();
-            if (snapshot.exists()) {
-              const keys = [];
-              snapshot.forEach(child => {
-                keys.push('pagamento_' + child.key);
-              });
-              return { keys };
+            if (firebaseReady && database) {
+              const snapshot = await database.ref('pagamentos').get();
+              if (snapshot.exists()) {
+                const keys = [];
+                snapshot.forEach(child => {
+                  keys.push('pagamento_' + child.key);
+                });
+                return { keys };
+              }
+              return { keys: [] };
             }
-            return { keys: [] };
           } catch(e) {
-            console.error('Erro ao listar:', e);
-            return { keys: [] };
+            console.warn('Erro Firebase list:', e);
+          }
+          // Fallback para localStorage
+          try { 
+            const keys = []; 
+            for (let i = 0; i < localStorage.length; i++) { 
+              const k = localStorage.key(i); 
+              if (!prefix || k.startsWith(prefix)) keys.push(k); 
+            } 
+            return { keys }; 
+          } catch(e) { 
+            return { keys: [] }; 
           }
         },
         async delete(key) {
           try {
-            const path = key.replace('pagamento_', '');
-            await database.ref('pagamentos/' + path).remove();
+            if (firebaseReady && database) {
+              const path = key.replace('pagamento_', '');
+              await database.ref('pagamentos/' + path).remove();
+              return;
+            }
           } catch(e) {
-            console.error('Erro ao deletar:', e);
+            console.warn('Erro Firebase delete:', e);
           }
+          // Fallback para localStorage
+          try { 
+            localStorage.removeItem(key); 
+          } catch(e) {}
         }
       };
     })();
@@ -1903,12 +1945,16 @@
 
     // Inicializar
     selectPaymentOption('pix');
+    carregarParticipantes();
+    atualizarTelSelect();
     
-    // Aguardar Firebase estar pronto
-    firebase.database().ref('pagamentos').on('value', () => {
-      carregarParticipantes();
-      atualizarTelSelect();
-    });
+    // Quando Firebase estiver pronto, sincronizar
+    if (firebaseReady && database) {
+      database.ref('pagamentos').on('value', () => {
+        carregarParticipantes();
+        atualizarTelSelect();
+      });
+    }
   </script>
 </body>
 </html>
