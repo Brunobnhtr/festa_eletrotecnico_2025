@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Confraternização SENAI — Eletrotécnica 2025</title>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
@@ -1112,14 +1115,64 @@
 
     document.getElementById('pixKey').textContent = PIX_KEY;
 
-    // Storage wrapper
+    // Inicializar Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyC8Z7k6P5Q9M2L3N4O5P6Q7R8S9T0U1V2W",
+      authDomain: "festa-eletrotecnico-2025.firebaseapp.com",
+      databaseURL: "https://festa-eletrotecnico-2025-default-rtdb.firebaseio.com",
+      projectId: "festa-eletrotecnico-2025",
+      storageBucket: "festa-eletrotecnico-2025.appspot.com",
+      messagingSenderId: "123456789012",
+      appId: "1:123456789012:web:abcdef1234567890"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Storage wrapper - Firebase Realtime Database
     const storage = (function() {
-      if (window.storage && window.storage.get && window.storage.set) return window.storage;
       return {
-        async set(key, value) { try { localStorage.setItem(key, value); } catch(e) {} },
-        async get(key) { try { const v = localStorage.getItem(key); return v !== null ? { value: v } : null; } catch(e) { return null; } },
-        async list(prefix) { try { const keys = []; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (!prefix || k.startsWith(prefix)) keys.push(k); } return { keys }; } catch(e) { return { keys: [] }; } },
-        async delete(key) { try { localStorage.removeItem(key); } catch(e) {} }
+        async set(key, value) {
+          try {
+            await db.ref('pagamentos/' + key).set(JSON.parse(value));
+          } catch(e) {
+            console.error('Erro ao salvar:', e);
+          }
+        },
+        async get(key) {
+          try {
+            const snapshot = await db.ref('pagamentos/' + key).get();
+            if (snapshot.exists()) {
+              return { value: JSON.stringify(snapshot.val()) };
+            }
+            return null;
+          } catch(e) {
+            console.error('Erro ao buscar:', e);
+            return null;
+          }
+        },
+        async list(prefix) {
+          try {
+            const snapshot = await db.ref('pagamentos').get();
+            const keys = [];
+            if (snapshot.exists()) {
+              snapshot.forEach(child => {
+                keys.push('pagamento_' + child.key);
+              });
+            }
+            return { keys };
+          } catch(e) {
+            console.error('Erro ao listar:', e);
+            return { keys: [] };
+          }
+        },
+        async delete(key) {
+          try {
+            await db.ref('pagamentos/' + key).remove();
+          } catch(e) {
+            console.error('Erro ao deletar:', e);
+          }
+        }
       };
     })();
 
@@ -1164,7 +1217,8 @@
         if (res && res.keys) {
           for (const k of res.keys) {
             try {
-              const d = await storage.get(k);
+              const tel = k.replace('pagamento_', '');
+              const d = await storage.get(tel);
               if (d) {
                 const p = JSON.parse(d.value);
                 pagamentosMap[p.telefone] = p;
@@ -1320,7 +1374,8 @@
         if (result && result.keys) {
           for (const key of result.keys) {
             try {
-              const data = await storage.get(key);
+              const tel = key.replace('pagamento_', '');
+              const data = await storage.get(tel);
               if (data) {
                 const pgto = JSON.parse(data.value);
                 nomesMap[pgto.telefone] = pgto.nome;
@@ -1481,8 +1536,8 @@
       }
 
       try {
-        const existente = await storage.get('pagamento_' + tel);
-        if (existente && existente.value) {
+        const existente = await storage.get(tel);
+        if (existente) {
           const ex = JSON.parse(existente.value);
           const exName = ex.nome || '(sem nome)';
           const exStatus = ex.status || 'pendente';
@@ -1503,7 +1558,7 @@
       };
 
       try {
-        await storage.set('pagamento_' + tel, JSON.stringify(pagamento));
+        await storage.set(tel, JSON.stringify(pagamento));
         mostrarStatus('pendente');
         
         if (tipo === 'pix') {
@@ -1517,6 +1572,7 @@
         carregarParticipantes();
       } catch (error) {
         alert('❌ Erro ao enviar. Tente novamente.');
+        console.error(error);
       }
     }
 
@@ -1525,7 +1581,7 @@
       if (!tel) return;
 
       try {
-        const data = await storage.get('pagamento_' + tel);
+        const data = await storage.get(tel);
         if (data) {
           const pgto = JSON.parse(data.value);
           mostrarStatus(pgto.status);
@@ -1587,7 +1643,8 @@
         if (result && result.keys) {
           for (const key of result.keys) {
             try {
-              const data = await storage.get(key);
+              const tel = key.replace('pagamento_', '');
+              const data = await storage.get(tel);
               if (data) {
                 const pgto = JSON.parse(data.value);
                 pagamentos.push(pgto);
@@ -1663,13 +1720,76 @@
       try { atualizarArrecadacao(); } catch (e) {}
     }
 
+      stats.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-number">${total}</div>
+          <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-card" style="border-color: #fbbf24;">
+          <div class="stat-number" style="color: #fbbf24;">${pendentes}</div>
+          <div class="stat-label">Pendentes</div>
+        </div>
+        <div class="stat-card" style="border-color: #4ade80;">
+          <div class="stat-number" style="color: #4ade80;">${aprovados}</div>
+          <div class="stat-label">Aprovados</div>
+        </div>
+        <div class="stat-card" style="border-color: #4ade80;">
+          <div class="stat-number" style="color: #4ade80;">R$ ${(aprovados * 20).toFixed(2)}</div>
+          <div class="stat-label">Arrecadado</div>
+        </div>
+      `;
+
+      const pendentesList = pagamentos.filter(p => p.status === 'pendente');
+      const aprovadosList = pagamentos.filter(p => p.status === 'aprovado');
+
+      let html = '';
+      html += '<h3 style="margin-bottom:10px;">💰 Confirmações Pendentes</h3>';
+      html += (pendentesList.length ? pendentesList.map(p => `
+        <div class="payment-card">
+          <div class="payment-info">
+            <div class="payment-details">
+              <h3>${p.nome}</h3>
+              <p>📱 ${formatarTelefone(p.telefone)}</p>
+              <p>💳 ${p.tipo === 'dinheiro' ? 'Dinheiro (aguardando recebimento)' : 'PIX (sem comprovante)'}</p>
+              <p>🕐 ${p.data}</p>
+            </div>
+            <div class="payment-actions">
+              <button class="btn-small btn-approve" onclick="aprovarPagamento('${p.telefone}')">✅ Aprovar</button>
+              <button class="btn-small btn-reject" onclick="rejeitarPagamento('${p.telefone}')">❌ Rejeitar</button>
+              <button class="btn-small" onclick="showCorrigirModal('${p.telefone}')">✏️ Corrigir Número</button>
+            </div>
+          </div>
+        </div>
+      `).join('') : '<p style="text-align: center; opacity: 0.7; padding: 20px;">Nenhuma confirmação pendente</p>');
+
+      html += '<h3 style="margin-top:20px; margin-bottom:10px;">✅ Confirmações Aprovadas</h3>';
+      html += (aprovadosList.length ? aprovadosList.map(p => `
+        <div class="payment-card aprovado">
+          <div class="payment-info">
+            <div class="payment-details">
+              <h3>${p.nome}</h3>
+              <p>📱 ${formatarTelefone(p.telefone)}</p>
+              <p>💳 ${p.tipo === 'dinheiro' ? 'Dinheiro (recebido)' : 'PIX (sem comprovante)'}</p>
+              <p>🕐 ${p.data}</p>
+            </div>
+            <div class="payment-actions">
+              <button class="btn-small" onclick="reverterPagamento('${p.telefone}')">↩️ Reverter</button>
+            </div>
+          </div>
+        </div>
+      `).join('') : '<p style="text-align: center; opacity: 0.7; padding: 20px;">Nenhuma confirmação aprovada</p>');
+
+      paymentsList.innerHTML = html;
+      try { atualizarArrecadacao(); } catch (e) {}
+    }
+
     async function aprovarPagamento(tel) {
       try {
-        const data = await storage.get('pagamento_' + tel);
+        const data = await storage.get(tel);
         if (data) {
           const pgto = JSON.parse(data.value);
           pgto.status = 'aprovado';
-          await storage.set('pagamento_' + tel, JSON.stringify(pgto));
+          await storage.set(tel, JSON.stringify(pgto));
           alert('✅ Aprovado!');
           carregarPainelAdmin();
           carregarParticipantes();
@@ -1683,7 +1803,7 @@
     async function rejeitarPagamento(tel) {
       if (confirm('Rejeitar esta confirmação?')) {
         try {
-          await storage.delete('pagamento_' + tel);
+          await storage.delete(tel);
           alert('❌ Rejeitado.');
           carregarPainelAdmin();
           carregarParticipantes();
@@ -1697,11 +1817,11 @@
     async function reverterPagamento(tel) {
       if (!confirm('Reverter esta confirmação aprovada para pendente?')) return;
       try {
-        const data = await storage.get('pagamento_' + tel);
+        const data = await storage.get(tel);
         if (data) {
           const pgto = JSON.parse(data.value);
           pgto.status = 'pendente';
-          await storage.set('pagamento_' + tel, JSON.stringify(pgto));
+          await storage.set(tel, JSON.stringify(pgto));
           alert('↩️ Pagamento revertido para pendente.');
           carregarPainelAdmin();
           carregarParticipantes();
@@ -1718,19 +1838,19 @@
         if (!newTel) return;
         if (newTel === oldTel) { alert('O número informado é o mesmo. Nada a alterar.'); return; }
         try {
-          const oldData = await storage.get('pagamento_' + oldTel);
+          const oldData = await storage.get(oldTel);
           if (!oldData) { alert('Pagamento original não encontrado.'); return; }
 
-          const existingNew = await storage.get('pagamento_' + newTel);
-          if (existingNew && existingNew.value) {
+          const existingNew = await storage.get(newTel);
+          if (existingNew) {
             if (!confirm('Já existe um pagamento para o número novo. Deseja sobrescrever?')) return;
           }
 
           const pgto = JSON.parse(oldData.value);
           pgto.telefone = newTel;
 
-          await storage.set('pagamento_' + newTel, JSON.stringify(pgto));
-          await storage.delete('pagamento_' + oldTel);
+          await storage.set(newTel, JSON.stringify(pgto));
+          await storage.delete(oldTel);
 
           alert('Número corrigido com sucesso.');
           carregarPainelAdmin();
@@ -1779,7 +1899,8 @@
         if (result && result.keys) {
           for (const key of result.keys) {
             try {
-              const data = await storage.get(key);
+              const tel = key.replace('pagamento_', '');
+              const data = await storage.get(tel);
               if (data) {
                 const pgto = JSON.parse(data.value);
                 if (pgto.status === 'aprovado') aprovados++;
