@@ -1127,7 +1127,8 @@
             console.error('Firebase não está disponível.');
             throw new Error('Firebase não está disponível');
           }
-          const path = key.replace(/^pagamento_/, '');
+          const raw = key.replace(/^pagamento_/, '');
+          const path = encodeURIComponent(raw);
           const obj = JSON.parse(value);
           try {
             await firebase.database().ref('pagamentos/' + path).set(obj);
@@ -1138,7 +1139,8 @@
         },
         async get(key) {
           if (!firebase || !firebase.database) return null;
-          const path = key.replace(/^pagamento_/, '');
+          const raw = key.replace(/^pagamento_/, '');
+          const path = encodeURIComponent(raw);
           try {
             const snap = await firebase.database().ref('pagamentos/' + path).get();
             if (snap.exists()) return { value: JSON.stringify(snap.val()) };
@@ -1154,7 +1156,14 @@
             const snap = await firebase.database().ref('pagamentos').get();
             if (!snap.exists()) return { keys: [] };
             const keys = [];
-            snap.forEach(child => keys.push('pagamento_' + child.key));
+            snap.forEach(child => {
+              try {
+                const decoded = decodeURIComponent(child.key);
+                keys.push('pagamento_' + decoded);
+              } catch (e) {
+                keys.push('pagamento_' + child.key);
+              }
+            });
             return { keys };
           } catch (e) {
             console.error('Erro ao listar no Firebase:', e);
@@ -1163,7 +1172,8 @@
         },
         async delete(key) {
           if (!firebase || !firebase.database) return;
-          const path = key.replace(/^pagamento_/, '');
+          const raw = key.replace(/^pagamento_/, '');
+          const path = encodeURIComponent(raw);
           try {
             await firebase.database().ref('pagamentos/' + path).remove();
           } catch (e) {
