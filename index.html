@@ -1115,112 +1115,105 @@
 
     document.getElementById('pixKey').textContent = PIX_KEY;
 
-    // Inicializar Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyD3GW9yZ8Q6vJ5K2nL9mO1pQ3rS4tU5vW6",
-      authDomain: "festa-eletrotecnico-2025.firebaseapp.com",
-      databaseURL: "https://festa-eletrotecnico-2025-default-rtdb.firebaseio.com",
-      projectId: "festa-eletrotecnico-2025",
-      storageBucket: "festa-eletrotecnico-2025.appspot.com",
-      messagingSenderId: "123456789012",
-      appId: "1:123456789012:web:abcdef1234567890"
-    };
-
+    // Inicializar Firebase - AGUARDANDO CONFIGURAÇÃO CORRETA
     let firebaseReady = false;
     let database = null;
 
-    try {
-      firebase.initializeApp(firebaseConfig);
-      database = firebase.database();
-      firebaseReady = true;
-    } catch(e) {
-      console.warn('Firebase não disponível, usando localStorage:', e);
-      firebaseReady = false;
-    }
-
-    // Storage wrapper com Firebase + fallback localStorage
+    // Storage wrapper - SOMENTE FIREBASE
     const storage = (function() {
       return {
         async set(key, value) {
-          try {
-            if (firebaseReady && database) {
-              const path = key.replace('pagamento_', '');
-              await database.ref('pagamentos/' + path).set(JSON.parse(value));
-              return;
-            }
-          } catch(e) {
-            console.warn('Erro Firebase, usando localStorage:', e);
+          if (!firebaseReady || !database) {
+            alert('⚠️ Aguardando conexão com Firebase...');
+            return;
           }
-          // Fallback para localStorage
-          try { 
-            localStorage.setItem(key, value); 
-          } catch(e) {}
+          try {
+            const path = key.replace('pagamento_', '');
+            await database.ref('pagamentos/' + path).set(JSON.parse(value));
+          } catch(e) {
+            console.error('Erro ao salvar:', e);
+            alert('❌ Erro ao salvar pagamento: ' + e.message);
+          }
         },
         async get(key) {
+          if (!firebaseReady || !database) return null;
           try {
-            if (firebaseReady && database) {
-              const path = key.replace('pagamento_', '');
-              const snapshot = await database.ref('pagamentos/' + path).get();
-              if (snapshot.exists()) {
-                return { value: JSON.stringify(snapshot.val()) };
-              }
+            const path = key.replace('pagamento_', '');
+            const snapshot = await database.ref('pagamentos/' + path).get();
+            if (snapshot.exists()) {
+              return { value: JSON.stringify(snapshot.val()) };
             }
+            return null;
           } catch(e) {
-            console.warn('Erro Firebase get:', e);
-          }
-          // Fallback para localStorage
-          try { 
-            const v = localStorage.getItem(key); 
-            return v !== null ? { value: v } : null; 
-          } catch(e) { 
-            return null; 
+            console.error('Erro ao buscar:', e);
+            return null;
           }
         },
         async list(prefix) {
+          if (!firebaseReady || !database) return { keys: [] };
           try {
-            if (firebaseReady && database) {
-              const snapshot = await database.ref('pagamentos').get();
-              if (snapshot.exists()) {
-                const keys = [];
-                snapshot.forEach(child => {
-                  keys.push('pagamento_' + child.key);
-                });
-                return { keys };
-              }
-              return { keys: [] };
+            const snapshot = await database.ref('pagamentos').get();
+            if (snapshot.exists()) {
+              const keys = [];
+              snapshot.forEach(child => {
+                keys.push('pagamento_' + child.key);
+              });
+              return { keys };
             }
+            return { keys: [] };
           } catch(e) {
-            console.warn('Erro Firebase list:', e);
-          }
-          // Fallback para localStorage
-          try { 
-            const keys = []; 
-            for (let i = 0; i < localStorage.length; i++) { 
-              const k = localStorage.key(i); 
-              if (!prefix || k.startsWith(prefix)) keys.push(k); 
-            } 
-            return { keys }; 
-          } catch(e) { 
-            return { keys: [] }; 
+            console.error('Erro ao listar:', e);
+            return { keys: [] };
           }
         },
         async delete(key) {
+          if (!firebaseReady || !database) return;
           try {
-            if (firebaseReady && database) {
-              const path = key.replace('pagamento_', '');
-              await database.ref('pagamentos/' + path).remove();
-              return;
-            }
+            const path = key.replace('pagamento_', '');
+            await database.ref('pagamentos/' + path).remove();
           } catch(e) {
-            console.warn('Erro Firebase delete:', e);
+            console.error('Erro ao deletar:', e);
           }
-          // Fallback para localStorage
-          try { 
-            localStorage.removeItem(key); 
-          } catch(e) {}
         }
       };
     })();
+
+    // SUBSTITUA ISSO COM A CONFIG DO FIREBASE CORRETO
+    function initFirebase(firebaseConfig) {
+      try {
+        if (firebase.apps.length === 0) {
+          firebase.initializeApp(firebaseConfig);
+        }
+        database = firebase.database();
+        firebaseReady = true;
+        console.log('✅ Firebase conectado com sucesso!');
+        carregarParticipantes();
+        atualizarTelSelect();
+        
+        // Sincronizar em tempo real
+        database.ref('pagamentos').on('value', () => {
+          carregarParticipantes();
+          atualizarTelSelect();
+        });
+      } catch(e) {
+        console.error('❌ Erro ao inicializar Firebase:', e);
+        alert('❌ Firebase não conectado. Verifique a configuração.');
+      }
+    }
+
+    // Inicializar com a config correta
+    const firebaseConfig = {
+      apiKey: "AIzaSyAHJn56m1Dvr4PKrxvTyrSJxqvy6XiexRE",
+      authDomain: "festa-eletrotecnico-2025.firebaseapp.com",
+      databaseURL: "https://festa-eletrotecnico-2025-default-rtdb.firebaseio.com",
+      projectId: "festa-eletrotecnico-2025",
+      storageBucket: "festa-eletrotecnico-2025.firebasestorage.app",
+      messagingSenderId: "565999365478",
+      appId: "1:565999365478:web:6ac7ffb1784c072d51eca7",
+      measurementId: "G-TMDXZ8WPY0"
+    };
+
+    initFirebase(firebaseConfig);
 
     // Função para formatar telefone brasileiro
     function formatarTelefone(tel) {
@@ -1945,16 +1938,6 @@
 
     // Inicializar
     selectPaymentOption('pix');
-    carregarParticipantes();
-    atualizarTelSelect();
-    
-    // Quando Firebase estiver pronto, sincronizar
-    if (firebaseReady && database) {
-      database.ref('pagamentos').on('value', () => {
-        carregarParticipantes();
-        atualizarTelSelect();
-      });
-    }
   </script>
 </body>
 </html>
