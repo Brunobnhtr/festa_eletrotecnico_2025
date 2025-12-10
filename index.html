@@ -1251,6 +1251,12 @@
       return tel;
     }
 
+    // Normalizar telefone para chave (apenas dígitos)
+    function normalizePhoneKey(tel) {
+      if (!tel) return '';
+      return tel.toString().replace(/\D/g, '');
+    }
+
     // Lista de telefones
     const TELEFONES = [
       '+5524992952177', '+5524981089129', '+5524992902369', '+5524999213768',
@@ -1287,16 +1293,22 @@
               if (d) {
                 const p = JSON.parse(d.value);
                 pagamentosMap[p.telefone] = p;
+                // mapear também pela versão normalizada (só dígitos)
+                pagamentosMap[normalizePhoneKey(p.telefone)] = p;
               }
             } catch (e) {}
           }
         }
       } catch (e) {}
 
-      TELEFONES.forEach(tel => {
+      // Garantir lista única de telefones (evita duplicados acidentais)
+      const uniqueTelefones = Array.from(new Set(TELEFONES));
+      uniqueTelefones.forEach(tel => {
         const option = document.createElement('option');
         option.value = tel;
         const p = pagamentosMap[tel];
+        const pNormalized = pagamentosMap[normalizePhoneKey(tel)];
+        const paymentEntry = p || pNormalized;
         if (p) {
           option.disabled = true;
           option.textContent = `${formatarTelefone(tel)} — ocupado (${p.nome})`;
