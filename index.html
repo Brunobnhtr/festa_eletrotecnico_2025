@@ -1324,6 +1324,24 @@
 
         telSelect.appendChild(option);
       }
+
+      // Defesa extra: remover opções duplicadas por value, mantendo a primeira ocorrência
+      try {
+        const seenVals = new Set();
+        // iterar do fim para o começo para poder remover sem afetar índices anteriores
+        for (let i = telSelect.options.length - 1; i >= 0; i--) {
+          const opt = telSelect.options[i];
+          if (!opt) continue;
+          const v = opt.value;
+          if (seenVals.has(v)) {
+            telSelect.remove(i);
+          } else {
+            seenVals.add(v);
+          }
+        }
+      } catch (e) {
+        console.warn('Erro ao remover duplicatas do select:', e);
+      }
     }
 
     // Selecionar tipo de pagamento
