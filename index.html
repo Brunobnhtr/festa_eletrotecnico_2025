@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>Confraternização SENAI — Eletrotécnica 2025</title>
   <!-- Firebase compat SDK (global "firebase" object) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -917,6 +920,24 @@
   </style>
 </head>
 <body>
+  <script>
+    // Remover chaves antigas de localStorage (@user requested no local cache)
+    try {
+      if (window.localStorage) {
+        const removed = [];
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith('pagamento_')) {
+            localStorage.removeItem(k);
+            removed.push(k);
+          }
+        }
+        if (removed.length) console.log('Removed local pagamento keys:', removed);
+      }
+    } catch (e) {
+      console.warn('Could not clear localStorage keys:', e);
+    }
+  </script>
   <!-- Hero Section com Zoom Effect -->
   <div class="hero-section">
     <div class="hero-image-container">
