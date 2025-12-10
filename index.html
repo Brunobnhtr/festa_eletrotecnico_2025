@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Confraternização SENAI — Eletrotécnica 2025</title>
+  <!-- Firebase compat SDK (global "firebase" object) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
@@ -1116,53 +1119,99 @@
     let firebaseReady = false;
     let database = null;
 
-    // Storage wrapper - Usando localStorage (sincronizado via GitHub)
+    // Storage wrapper - SOMENTE FIREBASE Realtime Database
     const storage = (function() {
       return {
         async set(key, value) {
-          try { 
-            localStorage.setItem(key, value);
-            console.log('✅ Salvo localmente:', key);
-          } catch(e) {
-            console.error('Erro ao salvar:', e);
+          if (!firebase || !firebase.database) {
+            console.error('Firebase não está disponível.');
+            throw new Error('Firebase não está disponível');
+          }
+          const path = key.replace(/^pagamento_/, '');
+          const obj = JSON.parse(value);
+          try {
+            await firebase.database().ref('pagamentos/' + path).set(obj);
+          } catch (e) {
+            console.error('Erro ao salvar no Firebase:', e);
+            throw e;
           }
         },
         async get(key) {
-          try { 
-            const v = localStorage.getItem(key); 
-            return v !== null ? { value: v } : null; 
-          } catch(e) { 
-            console.error('Erro ao buscar:', e);
-            return null; 
+          if (!firebase || !firebase.database) return null;
+          const path = key.replace(/^pagamento_/, '');
+          try {
+            const snap = await firebase.database().ref('pagamentos/' + path).get();
+            if (snap.exists()) return { value: JSON.stringify(snap.val()) };
+            return null;
+          } catch (e) {
+            console.error('Erro ao buscar no Firebase:', e);
+            return null;
           }
         },
         async list(prefix) {
-          try { 
-            const keys = []; 
-            for (let i = 0; i < localStorage.length; i++) { 
-              const k = localStorage.key(i); 
-              if (!prefix || k.startsWith(prefix)) keys.push(k); 
-            } 
-            return { keys }; 
-          } catch(e) { 
-            console.error('Erro ao listar:', e);
-            return { keys: [] }; 
+          if (!firebase || !firebase.database) return { keys: [] };
+          try {
+            const snap = await firebase.database().ref('pagamentos').get();
+            if (!snap.exists()) return { keys: [] };
+            const keys = [];
+            snap.forEach(child => keys.push('pagamento_' + child.key));
+            return { keys };
+          } catch (e) {
+            console.error('Erro ao listar no Firebase:', e);
+            return { keys: [] };
           }
         },
         async delete(key) {
-          try { 
-            localStorage.removeItem(key);
-            console.log('✅ Deletado localmente:', key);
-          } catch(e) {
-            console.error('Erro ao deletar:', e);
+          if (!firebase || !firebase.database) return;
+          const path = key.replace(/^pagamento_/, '');
+          try {
+            await firebase.database().ref('pagamentos/' + path).remove();
+          } catch (e) {
+            console.error('Erro ao deletar no Firebase:', e);
           }
         }
       };
     })();
 
-    // NOTA: Sistema funciona com localStorage
-    // Os dados são salvos localmente no navegador de cada pessoa
-    console.log('✅ Aplicação pronta! Usando localStorage.');
+    // Inicializar Firebase Realtime Database
+    const firebaseConfig = {
+      apiKey: "AIzaSyAHJn56m1Dvr4PKrxvTyrSJxqvy6XiexRE",
+      authDomain: "festa-eletrotecnico-2025.firebaseapp.com",
+      databaseURL: "https://festa-eletrotecnico-2025-default-rtdb.firebaseio.com",
+      projectId: "festa-eletrotecnico-2025",
+      storageBucket: "festa-eletrotecnico-2025.firebasestorage.app",
+      messagingSenderId: "565999365478",
+      appId: "1:565999365478:web:6ac7ffb1784c072d51eca7"
+    };
+
+    try {
+      if (typeof firebase === 'undefined') throw new Error('Firebase SDK não carregado');
+      if (!firebase.apps || firebase.apps.length === 0) {
+        firebase.initializeApp(firebaseConfig);
+      }
+      database = firebase.database();
+      console.log('🔌 Inicializando conexão com Firebase...');
+
+      // Ouvir estado de conexão e sincronizar pagamentos
+      database.ref('.info/connected').on('value', (snap) => {
+        if (snap.val() === true) {
+          console.log('✅ Firebase conectado');
+          // Carregar e sincronizar
+          database.ref('pagamentos').on('value', () => {
+            carregarParticipantes();
+            atualizarTelSelect();
+          });
+          // Carrega inicialmente
+          carregarParticipantes();
+          atualizarTelSelect();
+        } else {
+          console.warn('⚠️ Firebase desconectado');
+        }
+      });
+    } catch (e) {
+      console.error('❌ Erro ao inicializar Firebase:', e);
+      alert('❌ Erro ao conectar com Firebase: ' + (e && e.message ? e.message : e));
+    }
 
     // Função para formatar telefone brasileiro
     function formatarTelefone(tel) {
