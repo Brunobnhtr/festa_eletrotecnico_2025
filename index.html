@@ -1200,10 +1200,12 @@
           database.ref('pagamentos').on('value', () => {
             carregarParticipantes();
             atualizarTelSelect();
+            try { carregarPainelAdmin(); } catch(e) { /* admin não aberto */ }
           });
           // Carrega inicialmente
           carregarParticipantes();
           atualizarTelSelect();
+          try { carregarPainelAdmin(); } catch(e) { /* admin não aberto */ }
         } else {
           console.warn('⚠️ Firebase desconectado');
         }
