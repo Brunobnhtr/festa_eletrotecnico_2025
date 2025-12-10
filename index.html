@@ -1128,7 +1128,7 @@
             throw new Error('Firebase não está disponível');
           }
           const raw = key.replace(/^pagamento_/, '');
-          const path = encodeURIComponent(raw);
+          const path = raw; // usar chave bruta (ex: +5524992952177)
           const obj = JSON.parse(value);
           try {
             await firebase.database().ref('pagamentos/' + path).set(obj);
@@ -1140,7 +1140,7 @@
         async get(key) {
           if (!firebase || !firebase.database) return null;
           const raw = key.replace(/^pagamento_/, '');
-          const path = encodeURIComponent(raw);
+          const path = raw; // usar chave bruta
           try {
             const snap = await firebase.database().ref('pagamentos/' + path).get();
             if (snap.exists()) return { value: JSON.stringify(snap.val()) };
@@ -1157,12 +1157,8 @@
             if (!snap.exists()) return { keys: [] };
             const keys = [];
             snap.forEach(child => {
-              try {
-                const decoded = decodeURIComponent(child.key);
-                keys.push('pagamento_' + decoded);
-              } catch (e) {
-                keys.push('pagamento_' + child.key);
-              }
+              // child.key já é a chave bruta usada no DB (ex: +5524992952177)
+              keys.push('pagamento_' + child.key);
             });
             return { keys };
           } catch (e) {
@@ -1173,7 +1169,7 @@
         async delete(key) {
           if (!firebase || !firebase.database) return;
           const raw = key.replace(/^pagamento_/, '');
-          const path = encodeURIComponent(raw);
+          const path = raw; // usar chave bruta
           try {
             await firebase.database().ref('pagamentos/' + path).remove();
           } catch (e) {
