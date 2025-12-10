@@ -1180,25 +1180,52 @@
 
     // SUBSTITUA ISSO COM A CONFIG DO FIREBASE CORRETO
     function initFirebase(firebaseConfig) {
-      try {
-        if (firebase.apps.length === 0) {
+      return new Promise((resolve, reject) => {
+        try {
+          // Verificar se Firebase já foi inicializado
+          if (firebase.apps && firebase.apps.length > 0) {
+            console.log('Firebase já inicializado');
+            database = firebase.database();
+            firebaseReady = true;
+            resolve();
+            return;
+          }
+
+          // Inicializar Firebase
           firebase.initializeApp(firebaseConfig);
+          database = firebase.database();
+          
+          // Testar conexão
+          database.ref('.info/connected').on('value', (snapshot) => {
+            if (snapshot.val() === true) {
+              firebaseReady = true;
+              console.log('✅ Firebase conectado com sucesso!');
+              
+              // Carregar dados iniciais
+              carregarParticipantes();
+              atualizarTelSelect();
+              
+              // Sincronizar em tempo real
+              database.ref('pagamentos').on('value', () => {
+                console.log('📡 Sincronizando dados...');
+                carregarParticipantes();
+                atualizarTelSelect();
+              });
+              
+              resolve();
+            } else {
+              console.warn('⚠️ Firebase desconectado');
+              firebaseReady = false;
+            }
+          });
+          
+        } catch(e) {
+          console.error('❌ Erro ao inicializar Firebase:', e);
+          console.error('Detalhes do erro:', e.message);
+          firebaseReady = false;
+          reject(e);
         }
-        database = firebase.database();
-        firebaseReady = true;
-        console.log('✅ Firebase conectado com sucesso!');
-        carregarParticipantes();
-        atualizarTelSelect();
-        
-        // Sincronizar em tempo real
-        database.ref('pagamentos').on('value', () => {
-          carregarParticipantes();
-          atualizarTelSelect();
-        });
-      } catch(e) {
-        console.error('❌ Erro ao inicializar Firebase:', e);
-        alert('❌ Firebase não conectado. Verifique a configuração.');
-      }
+      });
     }
 
     // Inicializar com a config correta
@@ -1209,11 +1236,22 @@
       projectId: "festa-eletrotecnico-2025",
       storageBucket: "festa-eletrotecnico-2025.firebasestorage.app",
       messagingSenderId: "565999365478",
-      appId: "1:565999365478:web:6ac7ffb1784c072d51eca7",
-      measurementId: "G-TMDXZ8WPY0"
+      appId: "1:565999365478:web:6ac7ffb1784c072d51eca7"
     };
 
-    initFirebase(firebaseConfig);
+    // Inicializar Firebase com tratamento de erro
+    initFirebase(firebaseConfig)
+      .then(() => {
+        console.log('✅ Aplicação pronta!');
+      })
+      .catch((error) => {
+        console.error('❌ Falha ao conectar Firebase:', error);
+        // Tentar novamente em 5 segundos
+        setTimeout(() => {
+          console.log('🔄 Tentando reconectar...');
+          initFirebase(firebaseConfig);
+        }, 5000);
+      });
 
     // Função para formatar telefone brasileiro
     function formatarTelefone(tel) {
@@ -1938,6 +1976,13 @@
 
     // Inicializar
     selectPaymentOption('pix');
+    
+    // Carregar dados iniciais (sem esperar Firebase)
+    setTimeout(() => {
+      if (!firebaseReady) {
+        console.log('Firebase ainda não está pronto, carregando dados locais...');
+      }
+    }, 3000);
   </script>
 </body>
 </html>
